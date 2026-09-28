@@ -1,171 +1,140 @@
 // =====================================================
-// EXPENSE
+// ADD EXPENSE
 // =====================================================
 
-document
-    .getElementById("expenseForm")
-    .addEventListener("submit", async function (event) {
+document.getElementById("expenseForm").addEventListener("submit", async function (event) {
 
-        event.preventDefault();
+    event.preventDefault();
 
-        const amount =
-            document.getElementById("expenseAmount").value;
+    const amount = document.getElementById("expenseAmount").value;
+    const category = document.getElementById("expenseCategory").value;
+    const date = document.getElementById("expenseDate").value;
+    const userId = document.getElementById("expenseUserId")
+        ? document.getElementById("expenseUserId").value
+        : 1;
 
-        const category =
-            document.getElementById("expenseCategory").value;
+    const expenseData = {
+        amount: Number(amount),
+        category: category,
+        date: date,
+        userId: Number(userId)
+    };
 
-        const date =
-            document.getElementById("expenseDate").value;
+    console.log("Sending expense:", expenseData);
 
+    try {
 
-        const expenseData = {
-            amount: Number(amount),
-            category: category,
-            date: date
-        };
+        const response = await fetch("/api/expense/create", {
 
+            method: "POST",
 
-        try {
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-            const response = await fetch("/api/expense/create", {
+            body: JSON.stringify(expenseData)
 
-                method: "POST",
+        });
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+        if (!response.ok) {
 
-                body: JSON.stringify(expenseData)
-
-            });
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Failed to add expense. Status: "
-                    + response.status
-                );
-
-            }
-
-
-            const data = await response.json();
-
-            console.log("Expense added:", data);
-
-            alert("Expense added successfully!");
-
-
-            document
-                .getElementById("expenseForm")
-                .reset();
+            throw new Error(
+                "Failed to add expense. Status: " + response.status
+            );
 
         }
 
-        catch (error) {
+        const data = await response.json();
 
-            console.error("Expense error:", error);
+        console.log("Expense added:", data);
 
-            alert("Error adding expense");
+        alert("Expense added successfully!");
 
-        }
+        // Check whether spending has reached 90% of budget
+        await checkBudgetAlert(category);
 
-    });
+        document.getElementById("expenseForm").reset();
 
+    }
+
+    catch (error) {
+
+        console.error("Expense error:", error);
+
+        alert("Error adding expense");
+
+    }
+
+});
 
 
 // =====================================================
-// BUDGET
+// ADD BUDGET
 // =====================================================
 
-document
-    .getElementById("budgetForm")
-    .addEventListener("submit", async function (event) {
+document.getElementById("budgetForm").addEventListener("submit", async function (event) {
 
-        event.preventDefault();
+    event.preventDefault();
 
+    const amount = document.getElementById("budgetAmount").value;
+    const category = document.getElementById("budgetCategory").value;
+    const month = document.getElementById("budgetMonth").value;
+    const userId = document.getElementById("budgetUserId").value;
 
-        const amount =
-            document.getElementById("budgetAmount").value;
+    const budgetData = {
 
-        const category =
-            document.getElementById("budgetCategory").value;
+        amount: Number(amount),
+        category: category,
+        month: month,
+        userId: Number(userId)
 
-        const month =
-            document.getElementById("budgetMonth").value;
+    };
 
-        const userId =
-            document.getElementById("budgetUserId").value;
+    console.log("Sending budget:", budgetData);
 
+    try {
 
-        const budgetData = {
+        const response = await fetch("/api/budget/create", {
 
-            amount: Number(amount),
+            method: "POST",
 
-            category: category,
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-            month: month,
+            body: JSON.stringify(budgetData)
 
-            userId: Number(userId)
+        });
 
-        };
+        if (!response.ok) {
 
-
-        console.log("Sending budget:", budgetData);
-
-
-        try {
-
-            const response = await fetch("/api/budget/create", {
-
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify(budgetData)
-
-            });
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Failed to add budget. Status: "
-                    + response.status
-                );
-
-            }
-
-
-            const data = await response.json();
-
-            console.log("Budget added:", data);
-
-            alert("Budget added successfully!");
-
-
-            document
-                .getElementById("budgetForm")
-                .reset();
-
-
-            loadBudgets();
+            throw new Error(
+                "Failed to add budget. Status: " + response.status
+            );
 
         }
 
-        catch (error) {
+        const data = await response.json();
 
-            console.error("Budget error:", error);
+        console.log("Budget added:", data);
 
-            alert("Error adding budget");
+        alert("Budget added successfully!");
 
-        }
+        document.getElementById("budgetForm").reset();
 
-    });
+        loadBudgets();
 
+    }
+
+    catch (error) {
+
+        console.error("Budget error:", error);
+
+        alert("Error adding budget");
+
+    }
+
+});
 
 
 // =====================================================
@@ -174,32 +143,23 @@ document
 
 async function loadBudgets() {
 
-    const budgetList =
-        document.getElementById("budgetList");
-
+    const budgetList = document.getElementById("budgetList");
 
     try {
 
-        const response =
-            await fetch("/api/budget/getall");
-
+        const response = await fetch("/api/budget/getall");
 
         if (!response.ok) {
 
             throw new Error(
-                "Failed to load budgets. Status: "
-                + response.status
+                "Failed to load budgets. Status: " + response.status
             );
 
         }
 
-
-        const budgets =
-            await response.json();
-
+        const budgets = await response.json();
 
         budgetList.innerHTML = "";
-
 
         if (!budgets || budgets.length === 0) {
 
@@ -210,14 +170,11 @@ async function loadBudgets() {
 
         }
 
-
         budgets.forEach(function (budget) {
 
-            const div =
-                document.createElement("div");
+            const div = document.createElement("div");
 
             div.className = "budget-item";
-
 
             div.innerHTML = `
 
@@ -248,7 +205,6 @@ async function loadBudgets() {
 
             `;
 
-
             budgetList.appendChild(div);
 
         });
@@ -267,6 +223,121 @@ async function loadBudgets() {
 }
 
 
+// =====================================================
+// 90% BUDGET ALERT
+// =====================================================
+
+async function checkBudgetAlert(category) {
+
+    try {
+
+        // Get all expenses
+        const expenseResponse =
+            await fetch("/api/expense/getall");
+
+        if (!expenseResponse.ok) {
+
+            throw new Error("Could not get expenses");
+
+        }
+
+        const expenses =
+            await expenseResponse.json();
+
+
+        // Get all budgets
+        const budgetResponse =
+            await fetch("/api/budget/getall");
+
+        if (!budgetResponse.ok) {
+
+            throw new Error("Could not get budgets");
+
+        }
+
+        const budgets =
+            await budgetResponse.json();
+
+
+        // Find budget for the category
+        const budget = budgets.find(function (b) {
+
+            return b.category &&
+                b.category.toLowerCase() ===
+                category.toLowerCase();
+
+        });
+
+
+        // No budget found for this category
+        if (!budget) {
+
+            console.log(
+                "No budget found for category: " + category
+            );
+
+            return;
+
+        }
+
+
+        // Calculate total spending
+        // for this category
+        let totalSpent = 0;
+
+        expenses.forEach(function (expense) {
+
+            if (
+                expense.category &&
+                expense.category.toLowerCase() ===
+                category.toLowerCase()
+            ) {
+
+                totalSpent += Number(expense.amount);
+
+            }
+
+        });
+
+
+        // Calculate 90% of budget
+        const budgetAmount = Number(budget.amount);
+
+        const alertLimit = budgetAmount * 0.90;
+
+
+        console.log("Category:", category);
+        console.log("Budget:", budgetAmount);
+        console.log("Spent:", totalSpent);
+        console.log("90% limit:", alertLimit);
+
+
+        // Check if spending reached 90%
+        if (totalSpent >= alertLimit) {
+
+            alert(
+                "⚠️ BUDGET ALERT!\n\n" +
+                "Category: " + category + "\n" +
+                "Budget: ₹" + budgetAmount + "\n" +
+                "Spent: ₹" + totalSpent + "\n\n" +
+                "You have used 90% or more of your budget!"
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Budget alert error:",
+            error
+        );
+
+    }
+
+}
+
 
 // =====================================================
 // LOAD BUDGETS WHEN PAGE OPENS
@@ -274,9 +345,9 @@ async function loadBudgets() {
 
 document.addEventListener(
     "DOMContentLoaded",
-    function () {
+    async function () {
 
-        loadBudgets();
+        await loadBudgets();
 
     }
 );
