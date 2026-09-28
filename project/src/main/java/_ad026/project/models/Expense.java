@@ -35,5 +35,5 @@ public class Expense {
     private LocalDate date;
 
     private Long userId;
->>>>>>> ac60b32 (13:00)
+    private long samp;
 }
